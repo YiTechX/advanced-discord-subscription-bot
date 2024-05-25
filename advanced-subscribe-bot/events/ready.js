@@ -10,6 +10,6 @@ module.exports = {
             status: 'online',
         });
 
-        console.log(`Bot status set to "WATCHING YouTube subscriptions"`);
+        
     },
 };
