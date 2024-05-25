@@ -2,6 +2,7 @@ const Tesseract = require('tesseract.js');
 const fs = require('fs');
 const fetch = require('node-fetch');
 const { EmbedBuilder } = require('discord.js');
+const path = require('path');
 
 module.exports = {
     name: 'messageCreate',
@@ -9,16 +10,23 @@ module.exports = {
         if (message.channel.id !== config.kanal || message.author.bot || !message.attachments.size) return;
 
         const attachment = message.attachments.first();
-        const imagePath = `./images/${attachment.id}.png`;
+        const imagePath = path.join(__dirname, 'images', `${attachment.id}.png`);
 
-        const response = await fetch(attachment.url);
-        const buffer = await response.buffer();
-        fs.writeFileSync(imagePath, buffer);
+        try {
+            
+            const response = await fetch(attachment.url);
+            const buffer = await response.buffer();
+            fs.writeFileSync(imagePath, buffer);
 
-        Tesseract.recognize(imagePath, 'eng').then(({ data: { text } }) => {
-            if (text.includes(config.ytKanalAdi)) {
-                const member = message.guild.members.cache.get(message.author.id);
-                member.roles.add(config.aboneRolü);
+            // Process the image using Tesseract
+            const { data: { text } } = await Tesseract.recognize(imagePath, 'eng');
+
+            
+            const member = await message.guild.members.fetch(message.author.id);
+            if (member.roles.cache.has(config.aboneRolü)) {
+                await message.reply('Zaten abone rolüne sahipsiniz!');
+            } else if (text.includes('Subscribed') || text.includes('Abone Olundu')) {
+                await member.roles.add(config.aboneRolü);
 
                 const embed = new EmbedBuilder()
                     .setTitle('Abone Rolü Verildi')
@@ -27,17 +35,23 @@ module.exports = {
                     .setTimestamp();
 
                 const logChannel = message.guild.channels.cache.get(config.logKanal);
-                logChannel.send({ embeds: [embed] });
+                if (logChannel) {
+                    await logChannel.send({ embeds: [embed] });
+                }
 
-                message.reply('Abone rolü başarıyla verildi!');
+                await message.reply('Abone rolü başarıyla verildi!');
             } else {
-                message.reply('Abone rolü verilemedi. Lütfen doğru kanalın ekran görüntüsünü gönderin.');
+                await message.reply('Abone rolü verilemedi. Lütfen doğru kanalın ekran görüntüsünü gönderin.');
             }
-
-            fs.unlinkSync(imagePath);
-        }).catch(err => {
-            console.error(err);
-            message.reply('Ekran görüntüsü işlenirken bir hata oluştu.');
-        });
+        } catch (error) {
+            console.error('Error processing image:', error);
+            await message.reply('Ekran görüntüsü işlenirken bir hata oluştu. Lütfen tekrar deneyin.');
+        } finally {
+            
+            fs.unlink(imagePath, (err) => {
+                if (err) console.error('Error deleting image file:', err);
+            });
+        }
     },
 };
+
