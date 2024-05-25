@@ -1,0 +1,18 @@
+{
+    "name": "discord-subscription-bot",
+    "version": "1.0.0",
+    "description": "A Discord bot that automatically assigns a subscriber role based on screenshots.",
+    "main": "index.js",
+    "scripts": {
+      "start": "node index.js"
+    },
+    "author": "YiTechX",
+    "license": "MIT",
+    "dependencies": {
+      "discord.js": "^14.0.0",
+      "fs": "^0.0.1-security",
+      "node-fetch": "^3.0.0",
+      "tesseract.js": "^4.0.0"
+    }
+  }
+  
