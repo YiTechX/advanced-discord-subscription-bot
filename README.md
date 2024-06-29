@@ -17,7 +17,7 @@ A Discord bot that automatically assigns a subscriber role based on screenshots 
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/yourusername/discord-subscription-bot.git
+    git clone https://github.com/YiTechX/discord-subscription-bot.git
     cd discord-subscription-bot
     ```
 
